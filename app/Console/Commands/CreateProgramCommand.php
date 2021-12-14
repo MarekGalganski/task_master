@@ -26,7 +26,6 @@ class CreateProgramCommand extends Command
      */
     protected $description = 'Command description';
 
-
     /**
      * Create a new command instance.
      *
@@ -84,7 +83,8 @@ class CreateProgramCommand extends Command
     private function createHtmlFile(): void
     {
         $htmlString = '<!DOCTYPE html>' . PHP_EOL . '<html lang="en">' . PHP_EOL . '<head>' . PHP_EOL . "\t"
-            . '<link rel="stylesheet" href="./app.css" />' . PHP_EOL . "\t" . '<title>Test program</title>' . PHP_EOL
+            . '<link rel="stylesheet" href="./app.css" />' . PHP_EOL . "\t" . '<title>'
+            . $this->programName . '</title>' . PHP_EOL
             . '</head>' . PHP_EOL . '<body>' . PHP_EOL;
         for ($i = 1; $i <= $this->componentsNumber; $i++) {
             $htmlString .= '<div class="module_' . $i . '"></div>' . PHP_EOL;
