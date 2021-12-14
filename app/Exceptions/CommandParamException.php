@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 
-class ProgramNameException extends Exception
+class CommandParamException extends Exception
 {
     //
 }
