@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Exceptions\CommandParamException;
+use App\Utils\RandomGenerator;
 use Illuminate\Console\Command;
 
 class CreateProgramCommand extends Command
@@ -48,6 +49,8 @@ class CreateProgramCommand extends Command
             $this->assignParams();
             $this->createNewProgramDirectory();
             $this->createHtmlFile();
+            $this->createCssFile();
+            $this->createJsFile();
         } catch (CommandParamException $exception) {
             $this->error($exception->getMessage());
             return Command::FAILURE;
@@ -86,7 +89,37 @@ class CreateProgramCommand extends Command
         for ($i = 1; $i <= $this->componentsNumber; $i++) {
             $htmlString .= '<div class="module_' . $i . '"></div>' . PHP_EOL;
         }
-        $htmlString .= '<script src="./app.js"></script>' . PHP_EOL . '</body>' . PHP_EOL . '</html>';
+        $htmlString .= '<script src="./app.js"></script>' . PHP_EOL . '</body>' . PHP_EOL . '</html>' . PHP_EOL;
         file_put_contents($this->programPath . '/index.html', $htmlString);
+    }
+
+    private function createCssFile(): void
+    {
+        $cssString = '';
+        for ($i = 1; $i <= $this->componentsNumber; $i++) {
+            $cssString .= '.module_' . $i . ' {' . PHP_EOL . "\t" . 'background: '
+                . RandomGenerator::generateColor() .';' . PHP_EOL . "\t"
+                . 'width: 100%;' . PHP_EOL . "\t" . 'height: 200px;' . PHP_EOL . "\t"
+                . 'display: block;' . PHP_EOL . ' }' . PHP_EOL . PHP_EOL;
+        }
+        file_put_contents($this->programPath . '/app.css', $cssString);
+    }
+
+    private function createJsFile(): void
+    {
+        $jsFile = 'function onReady() {' . PHP_EOL;
+        for ($i = 1; $i <= $this->componentsNumber; $i++) {
+            $jsFile .= "\t" . 'console.log(\'onReady module_' . $i . '\')' . PHP_EOL;
+        }
+
+        $jsFile .= '}' . PHP_EOL . PHP_EOL . 'function onViewable() {' . PHP_EOL;
+        for ($i = 1; $i <= $this->componentsNumber; $i++) {
+            $jsFile .= "\t" . 'console.log(\'onViewable module_' . $i . '\')' . PHP_EOL;
+        }
+
+        $jsFile .= '}' . PHP_EOL . PHP_EOL . 'onReady()' . PHP_EOL . 'setTimeout(function() {'
+            . PHP_EOL . "\t" . 'onViewable()' . PHP_EOL . '}, 500)' . PHP_EOL;
+
+        file_put_contents($this->programPath . '/app.js', $jsFile);
     }
 }
