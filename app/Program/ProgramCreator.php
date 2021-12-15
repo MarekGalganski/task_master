@@ -5,7 +5,9 @@ namespace App\Program;
 
 
 use App\Exceptions\CommandParamException;
+use App\Program\Module\BackgroundModule;
 use App\Utils\RandomGenerator;
+use DOMDocument;
 
 class ProgramCreator
 {
@@ -13,9 +15,14 @@ class ProgramCreator
     private string $programName;
     private string $rootPath;
     private ParamsValidator $paramsValidator;
+    private BackgroundModule $backgroundModule;
+    private DOMDocument $htmlDOM;
+
     public function __construct(ParamsValidator $paramsValidator)
     {
         $this->paramsValidator = $paramsValidator;
+        $this->htmlDOM = new DOMDocument();
+        $this->backgroundModule = new BackgroundModule();
         $this->rootPath = realpath('./..');
     }
 
@@ -26,6 +33,7 @@ class ProgramCreator
     public function create(array $data): void
     {
         $this->assignParams($data);
+        $this->prepareHtmlTemplate();
         $this->createNewProgramDirectory();
         $this->createHtmlFile();
         $this->createCssFile();
@@ -50,37 +58,51 @@ class ProgramCreator
 
     private function createHtmlFile(): void
     {
-        $htmlString = '<!DOCTYPE html>' . PHP_EOL . '<html lang="en">' . PHP_EOL . '<head>' . PHP_EOL . "\t"
-            . '<link rel="stylesheet" href="./app.css" />' . PHP_EOL . "\t" . '<title>'
-            . $this->programName . '</title>' . PHP_EOL
-            . '</head>' . PHP_EOL . '<body>' . PHP_EOL;
+        $backgroundModule = $this->htmlDOM->importNode($this->backgroundModule->getHtmlCode());
+        $body = $this->htmlDOM->getElementsByTagName('body');
+        $body = $body->item(0);
+        $body->insertBefore($backgroundModule, $body->firstChild);
+        $htmlString = $this->htmlDOM->saveHTML();
 
-        $htmlString .= '<div class="module_1"></div>' . PHP_EOL;
-
-        $htmlString .= '<script src="./app.js"></script>' . PHP_EOL . '</body>' . PHP_EOL . '</html>' . PHP_EOL;
         file_put_contents($this->programPath . '/index.html', $htmlString);
+    }
+
+    private function prepareHtmlTemplate(): void
+    {
+        $html = $this->htmlDOM->createElement('html');
+        $html->setAttribute('lang', 'en');
+        $head = $this->htmlDOM->createElement('head');
+
+        $title = $this->htmlDOM->createElement('title', $this->programName);
+
+        $link = $this->htmlDOM->createElement('link');
+        $link->setAttribute('rel', 'stylesheet');
+        $link->setAttribute('href', './app.css');
+
+        $head->appendChild($title);
+        $head->appendChild($link);
+
+        $script = $this->htmlDOM->createElement('script');
+        $script->setAttribute('src', './app.js');
+
+        $body = $this->htmlDOM->createElement('body');
+        $body->appendChild($script);
+
+        $html->appendChild($head);
+        $html->appendChild($body);
+        $this->htmlDOM->appendChild($html);
     }
 
     private function createCssFile(): void
     {
-        $cssString = '.module_1 {' . PHP_EOL . "\t" . 'background: '
-            . RandomGenerator::generateColor() .';' . PHP_EOL . "\t"
-            . 'width: 100%;' . PHP_EOL . "\t" . 'height: 200px;' . PHP_EOL . "\t"
-            . 'display: block;' . PHP_EOL . ' }' . PHP_EOL . PHP_EOL;
+        $cssString = $this->backgroundModule->getCssCode();
 
         file_put_contents($this->programPath . '/app.css', $cssString);
     }
 
     private function createJsFile(): void
     {
-        $jsFile = 'function onReady() {' . PHP_EOL;
-        $jsFile .= "\t" . 'console.log(\'onReady module_1\')' . PHP_EOL;
-
-        $jsFile .= '}' . PHP_EOL . PHP_EOL . 'function onViewable() {' . PHP_EOL;
-        $jsFile .= "\t" . 'console.log(\'onViewable module_1\')' . PHP_EOL;
-
-        $jsFile .= '}' . PHP_EOL . PHP_EOL . 'onReady()' . PHP_EOL . 'setTimeout(function() {'
-            . PHP_EOL . "\t" . 'onViewable()' . PHP_EOL . '}, 500)' . PHP_EOL;
+        $jsFile = $this->backgroundModule->getJsCode();
 
         file_put_contents($this->programPath . '/app.js', $jsFile);
     }
