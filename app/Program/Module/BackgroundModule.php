@@ -15,7 +15,7 @@ class BackgroundModule implements Module
     {
         $dom = new DOMDocument();
         $div = $dom->createElement('div');
-        $div->setAttribute('class', 'module_1');
+        $div->setAttribute('class', 'background');
         return $div;
     }
 
@@ -26,7 +26,7 @@ class BackgroundModule implements Module
 
     public function getCssCode(): string
     {
-        return PHP_EOL . '.module_1 {'
+        return PHP_EOL . '.background {'
             . PHP_EOL . "\t" . 'background: ' . RandomGenerator::generateColor() .';'
             . PHP_EOL . "\t" . 'width: 100%;'
             . PHP_EOL . "\t" . 'height: 200px;'

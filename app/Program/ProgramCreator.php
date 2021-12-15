@@ -7,6 +7,7 @@ namespace App\Program;
 use App\Exceptions\CommandParamException;
 use App\Program\Module\BackgroundModule;
 use App\Program\Module\ButtonModule;
+use App\Program\Module\HeaderModule;
 use App\Utils\RandomGenerator;
 use DOMDocument;
 
@@ -20,6 +21,7 @@ class ProgramCreator
 
     private BackgroundModule $backgroundModule;
     private ButtonModule $buttonModule;
+    private HeaderModule $headerModule;
 
     public function __construct(ParamsValidator $paramsValidator)
     {
@@ -29,6 +31,7 @@ class ProgramCreator
 
         $this->backgroundModule = new BackgroundModule();
         $this->buttonModule = new ButtonModule();
+        $this->headerModule = new HeaderModule();
     }
 
     /**
@@ -65,6 +68,8 @@ class ProgramCreator
     {
         $backgroundModule = $this->htmlDOM->importNode($this->backgroundModule->getHtmlCode());
         $buttonModule = $this->htmlDOM->importNode($this->buttonModule->getHtmlCode(), true);
+        $headerModule = $this->htmlDOM->importNode($this->headerModule->getHtmlCode(), true);
+        $backgroundModule->appendChild($headerModule);
         $backgroundModule->appendChild($buttonModule);
 
         $body = $this->htmlDOM->getElementsByTagName('body');
@@ -105,6 +110,7 @@ class ProgramCreator
     {
         $cssString = $this->backgroundModule->getCssCode();
         $cssString .= $this->buttonModule->getCssCode();
+        $cssString .= $this->headerModule->getCssCode();
 
         file_put_contents($this->programPath . '/app.css', $cssString);
     }
@@ -113,6 +119,8 @@ class ProgramCreator
     {
         $jsFile = $this->backgroundModule->getJsCode();
         $jsFile .= $this->buttonModule->getJsCode();
+        $jsFile .= $this->headerModule->getJsCode();
+
         file_put_contents($this->programPath . '/app.js', $jsFile);
     }
 }
